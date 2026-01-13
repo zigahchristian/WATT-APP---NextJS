@@ -1,0 +1,103 @@
+{
+  "students": [
+    {
+      "studentId": "STU240001",
+      "firstName": "John",
+      "lastName": "Mensah",
+      "email": "john.mensah1@example.com",
+      "phone": "+233201000001",
+      "address": "East Legon, Accra",
+      "dob": "2000-01-15",
+      "gender": "MALE",
+      "status": "ACTIVE",
+      "course":"6-Month Professional Course",
+      "imageUrl": "/uploads/profiles/default-male.png"
+    },
+    {
+      "studentId": "STU240002",
+      "firstName": "Jane",
+      "lastName": "Owusu",
+      "email": "jane.owusu2@example.com",
+      "phone": "+233201000002",
+      "address": "Madina, Accra",
+      "dob": "2001-02-18",
+      "gender": "FEMALE",
+      "status": "ACTIVE",
+      "course":"6-Month Professional Course",
+      "imageUrl": "/uploads/profiles/default-female.png"
+    },
+    {
+      "studentId": "STU240003",
+      "firstName": "Michael",
+      "lastName": "Boateng",
+      "email": "michael.boateng3@example.com",
+      "phone": "+233201000003",
+      "address": "Kumasi, Ashanti",
+      "dob": "1999-07-09",
+      "gender": "MALE",
+      "status": "ACTIVE",
+      "course":"6-Month Professional Course",
+      "imageUrl": "/uploads/profiles/default-male.png"
+    },
+    {
+      "studentId": "STU240004",
+      "firstName": "Akosua",
+      "lastName": "Adjei",
+      "email": "akosua.adjei4@example.com",
+      "phone": "+233201000004",
+      "address": "Cape Coast, Central",
+      "dob": "2002-04-11",
+      "gender": "FEMALE",
+      "status": "ACTIVE",
+      "course":"6-Month Professional Course", 
+      "imageUrl": "/uploads/profiles/default-female.png"
+    },
+
+    {
+      "studentId": "STU240050",
+      "firstName": "Daniel",
+      "lastName": "Asare",
+      "email": "daniel.asare50@example.com",
+      "phone": "+233201000050",
+      "address": "Ho, Volta",
+      "dob": "2001-09-27",
+      "gender": "MALE",
+      "status": "ACTIVE",
+      "course":"6-Month Professional Course",
+      "imageUrl": "/uploads/profiles/default-male.png"
+    }
+  ],
+
+  "fees": [
+    {
+      "studentRef": "STU240001",
+      "amount": 5000,
+      "dueDate": "2024-12-31",
+      "paymentMethod": "CARD",
+      "status": "PAID",
+      "description": "Tuition Fee - Semester 1",
+      "receiptNumber": "REC24120001",
+      "paymentDate": "2024-12-15"
+    },
+    {
+      "studentRef": "STU240002",
+      "amount": 4500,
+      "dueDate": "2024-12-31",
+      "paymentMethod": "BANK_TRANSFER",
+      "status": "PENDING",
+      "description": "Tuition Fee - Semester 1",
+      "receiptNumber": "REC24120002"
+    },
+
+    {
+      "studentRef": "STU240050",
+      "amount": 4800,
+      "dueDate": "2024-12-31",
+      "paymentMethod": "CASH",
+      "status": "PAID",
+      "description": "Tuition Fee - Semester 1",
+      "receiptNumber": "REC24120050",
+      "paymentDate": "2024-12-20"
+    }
+  ]
+}

@@ -1,0 +1,369 @@
+"use client";
+
+import { useState, useRef } from "react";
+import {
+  Camera,
+  RotateCw,
+  Upload,
+  Check,
+  X,
+  Video,
+  VideoOff,
+} from "lucide-react";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Slider } from "@/components/ui/slider";
+import { Switch } from "@/components/ui/switch";
+import { Button } from "@/components/ui/button";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import Webcam from "react-webcam";
+import toast from "react-hot-toast";
+
+interface CameraDialogProps {
+  isOpen: boolean;
+  onClose: () => void;
+  onUpload: (imageData: string) => Promise<void>;
+  currentImage: string;
+  studentName: string;
+  firstName?: string;
+  lastName?: string;
+}
+
+const WebcamCamera = ({
+  isOpen,
+  onClose,
+  onUpload,
+  currentImage,
+  studentName,
+  firstName = "",
+  lastName = "",
+}: CameraDialogProps) => {
+  const [uploading, setUploading] = useState(false);
+  const [cameraMode, setCameraMode] = useState<"photo" | "video">("photo");
+  const [facingMode, setFacingMode] = useState<"user" | "environment">("user");
+  const [mirrored, setMirrored] = useState(true);
+  const [zoom, setZoom] = useState(1);
+  const [capturedImage, setCapturedImage] = useState<string | null>(null);
+  const [isWebcamOn, setIsWebcamOn] = useState(true);
+
+  const webcamRef = useRef<Webcam>(null);
+
+  // Capture photo from webcam
+  const capturePhoto = () => {
+    if (webcamRef.current) {
+      const imageSrc = webcamRef.current.getScreenshot();
+      setCapturedImage(imageSrc);
+      toast.success("Photo captured!");
+    }
+  };
+
+  // Flip camera
+  const flipCamera = () => {
+    setFacingMode(facingMode === "user" ? "environment" : "user");
+  };
+
+  // Toggle mirror mode
+  const toggleMirror = () => {
+    setMirrored(!mirrored);
+  };
+
+  // Handle captured image upload
+  const handleCaptureUpload = async () => {
+    if (capturedImage) {
+      setUploading(true);
+      try {
+        await onUpload(capturedImage);
+        setCapturedImage(null);
+      } catch (error) {
+        console.error("Error uploading image:", error);
+      } finally {
+        setUploading(false);
+      }
+    }
+  };
+
+  // Reset camera capture
+  const resetCapture = () => {
+    setCapturedImage(null);
+  };
+
+  // Toggle webcam on/off
+  const toggleWebcam = () => {
+    setIsWebcamOn(!isWebcamOn);
+  };
+
+  // Handle file upload
+  const handleFileUpload = async (
+    event: React.ChangeEvent<HTMLInputElement>
+  ) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file");
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image size should be less than 5MB");
+      return;
+    }
+
+    setUploading(true);
+    const reader = new FileReader();
+
+    reader.onloadend = async () => {
+      const imageData = reader.result as string;
+      try {
+        await onUpload(imageData);
+      } catch (error) {
+        console.error("Error uploading image:", error);
+      } finally {
+        setUploading(false);
+      }
+    };
+
+    reader.readAsDataURL(file);
+  };
+
+  return (
+    <Dialog open={isOpen} onOpenChange={onClose}>
+      <DialogContent className="sm:max-w-2xl">
+        <DialogHeader>
+          <DialogTitle>Update Profile Picture</DialogTitle>
+          <DialogDescription>
+            Capture a new photo or upload an image for {studentName}
+          </DialogDescription>
+        </DialogHeader>
+
+        <div className="space-y-4">
+          {/* Tabs for Camera/Upload */}
+          <Tabs defaultValue="camera" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="camera" className="flex items-center gap-2">
+                <Camera className="h-4 w-4" />
+                Camera
+              </TabsTrigger>
+              <TabsTrigger value="upload" className="flex items-center gap-2">
+                <Upload className="h-4 w-4" />
+                Upload
+              </TabsTrigger>
+            </TabsList>
+
+            {/* Camera Tab */}
+            <TabsContent value="camera" className="space-y-4">
+              {capturedImage ? (
+                // Preview captured image
+                <div className="space-y-4">
+                  <div className="relative aspect-video rounded-lg overflow-hidden border">
+                    <img
+                      src={capturedImage}
+                      alt="Captured"
+                      className="w-full h-full object-contain"
+                    />
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <Button
+                      variant="outline"
+                      onClick={resetCapture}
+                      disabled={uploading}
+                      className="gap-2"
+                    >
+                      <RotateCw className="h-4 w-4" />
+                      Retake
+                    </Button>
+                    <Button
+                      onClick={handleCaptureUpload}
+                      disabled={uploading}
+                      className="gap-2"
+                    >
+                      {uploading ? (
+                        <>
+                          <div className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          Uploading...
+                        </>
+                      ) : (
+                        <>
+                          <Check className="h-4 w-4" />
+                          Use This Photo
+                        </>
+                      )}
+                    </Button>
+                  </div>
+                </div>
+              ) : (
+                // Live Camera View
+                <div className="space-y-4">
+                  <div className="relative aspect-video rounded-lg overflow-hidden border">
+                    {isWebcamOn ? (
+                      <Webcam
+                        ref={webcamRef}
+                        audio={false}
+                        screenshotFormat="image/jpeg"
+                        videoConstraints={{
+                          facingMode,
+                          aspectRatio: 1,
+                        }}
+                        mirrored={mirrored}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center bg-gray-100">
+                        <VideoOff className="h-12 w-12 text-gray-400" />
+                      </div>
+                    )}
+
+                    {/* Camera Controls Overlay */}
+                    <div className="absolute bottom-4 left-0 right-0 flex justify-center gap-2">
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        onClick={toggleWebcam}
+                        className="bg-white/90 hover:bg-white"
+                      >
+                        {isWebcamOn ? (
+                          <VideoOff className="h-4 w-4" />
+                        ) : (
+                          <Video className="h-4 w-4" />
+                        )}
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        onClick={flipCamera}
+                        className="bg-white/90 hover:bg-white"
+                      >
+                        <RotateCw className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="secondary"
+                        size="icon"
+                        onClick={toggleMirror}
+                        className="bg-white/90 hover:bg-white"
+                      >
+                        <div className="text-sm font-semibold">
+                          {mirrored ? "M" : "NM"}
+                        </div>
+                      </Button>
+                    </div>
+                  </div>
+
+                  {/* Zoom Control */}
+                  <div className="space-y-2">
+                    <Label className="flex justify-between">
+                      <span>Zoom</span>
+                      <span className="text-muted-foreground">
+                        {zoom.toFixed(1)}x
+                      </span>
+                    </Label>
+                    <Slider
+                      value={[zoom]}
+                      min={1}
+                      max={3}
+                      step={0.1}
+                      onValueChange={(value) => setZoom(value[0])}
+                    />
+                  </div>
+
+                  {/* Capture Button */}
+                  <div className="flex justify-center">
+                    <Button
+                      onClick={capturePhoto}
+                      disabled={!isWebcamOn}
+                      size="lg"
+                      className="h-16 w-16 rounded-full"
+                    >
+                      <Camera className="h-6 w-6" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </TabsContent>
+
+            {/* Upload Tab */}
+            <TabsContent value="upload" className="space-y-4">
+              <div className="flex flex-col items-center gap-4">
+                <Avatar className="h-40 w-40 border-4">
+                  <AvatarImage src={currentImage} alt="Current Profile" />
+                  <AvatarFallback className="text-3xl">
+                    {firstName?.[0]}
+                    {lastName?.[0]}
+                  </AvatarFallback>
+                </Avatar>
+
+                <div className="w-full">
+                  <Label htmlFor="file-upload" className="sr-only">
+                    Upload Image
+                  </Label>
+                  <Input
+                    id="file-upload"
+                    type="file"
+                    accept="image/*"
+                    onChange={handleFileUpload}
+                    disabled={uploading}
+                  />
+                  <p className="text-xs text-muted-foreground mt-2 text-center">
+                    JPG, PNG, WebP • Max 5MB
+                  </p>
+                </div>
+
+                {uploading && (
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                    <div className="h-4 w-4 border-2 border-primary border-t-transparent rounded-full animate-spin" />
+                    Uploading...
+                  </div>
+                )}
+              </div>
+            </TabsContent>
+          </Tabs>
+
+          {/* Camera Settings */}
+          <div className="border-t pt-4">
+            <div className="flex items-center justify-between">
+              <div className="space-y-2">
+                <Label className="text-sm">Camera Settings</Label>
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      checked={mirrored}
+                      onCheckedChange={setMirrored}
+                      disabled={!isWebcamOn}
+                    />
+                    <Label className="text-sm">Mirror</Label>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Switch
+                      checked={facingMode === "environment"}
+                      onCheckedChange={(checked) =>
+                        setFacingMode(checked ? "environment" : "user")
+                      }
+                      disabled={!isWebcamOn}
+                    />
+                    <Label className="text-sm">Rear Camera</Label>
+                  </div>
+                </div>
+              </div>
+              <Button variant="ghost" onClick={onClose} disabled={uploading}>
+                <X className="h-4 w-4 mr-2" />
+                Cancel
+              </Button>
+            </div>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+export default WebcamCamera;

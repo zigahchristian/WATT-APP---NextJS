@@ -1,0 +1,124 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client"
+  output   = "../generated/prisma"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String  @map("user_id")
+  type              String
+  provider          String
+  providerAccountId String  @map("provider_account_id")
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+enum UserRole {
+  ADMIN
+  USER
+  TEACHER
+}
+
+model User {
+  id             String    @id @default(cuid())
+  firstname      String?
+  lastname       String?
+  email          String    @unique
+  emailVerified  DateTime? @map("email_verified")
+  image          String?
+  imagePublicUrl String?
+  password       String?
+  role           UserRole? @default(USER)
+  Account        Account[]
+
+  @@map("users")
+}
+
+model Student {
+  id                    String   @id @default(cuid())
+  studentId             String   @unique
+  firstName             String
+  lastName              String
+  gender                String
+  dob                   DateTime
+  email                 String   @unique
+  phone                 String
+  address               String
+  course                String
+  enrollmentdate        DateTime @default(now())
+  emergencyContactName  String?  @default("")
+  emergencyContactPhone String?  @default("")
+  imageUrl              String?
+  status                String   @default("ACTIVE")
+  createdAt             DateTime @default(now())
+  updatedAt             DateTime @updatedAt
+  fees                  Fee[]
+  courses               Course[]
+}
+
+enum StudentStatus {
+  ACTIVE
+  INACTIVE
+  GRADUATED
+}
+
+model Fee {
+  id          String    @id @default(cuid())
+  studentId   String
+  student     Student   @relation(fields: [studentId], references: [id], onDelete: Cascade)
+  amount      Float
+  paymentDate DateTime  @default(now())
+  dueDate     DateTime
+  status      FeeStatus @default(PENDING)
+  description String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Course {
+  id         String   @id @default(cuid())
+  name       String
+  code       String   @unique
+  instructor String
+  day        String
+  startTime  String
+  endTime    String
+  duration   String
+  studentId  String?
+  student    Student? @relation(fields: [studentId], references: [id])
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model Timetable {
+  id        String   @id @default(uuid())
+  timeSlots Json
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+
+
+
+enum FeeStatus {
+  PENDING
+  PAID
+  OVERDUE
+}
