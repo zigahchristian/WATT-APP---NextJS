@@ -1,0 +1,122 @@
+[
+  {
+    "id": "sat-1",
+    "day": "Saturday",
+    "time": "8:30 - 10:30",
+    "students": [
+      {
+        "id": "cmki5v0ct000080vrcwm684sm",
+        "name": "Zuleiha Wumpini",
+        "subject": "Module 1 - Beginners",
+        "color": "bg-red-100 border-red-300 text-red-800",
+        "bgHex": "#fcd9d9",
+        "textHex": "#821717",
+        "borderHex": "#e48181"
+      }
+    ]
+  },
+  {
+    "id": "sat-2",
+    "day": "Saturday",
+    "time": "11:00 - 1:00",
+    "students": [
+      {
+        "id": "cmki88qop000480vrt33wna2e",
+        "name": "Christine Marie Adonoo",
+        "subject": "Module 1 - Beginners",
+        "color": "bg-orange-100 border-orange-300 text-orange-800",
+        "bgHex": "#fce7d9",
+        "textHex": "#824217",
+        "borderHex": "#e4a981"
+      },
+      {
+        "id": "cmki868p9000380vrzv0ulrvm",
+        "name": "Anthony Adonoo",
+        "subject": "Module 1 - Beginners",
+        "color": "bg-orange-100 border-orange-300 text-orange-800",
+        "bgHex": "#fce7d9",
+        "textHex": "#824217",
+        "borderHex": "#e4a981"
+      }
+    ]
+  },
+  {
+    "id": "sat-3",
+    "day": "Saturday",
+    "time": "1:30 - 3:30",
+    "students": [
+      {
+        "id": "cmkicrhce000580vrjhkaam8x",
+        "name": "Ginoria Adjei",
+        "subject": "Module 2A - Fullstack Web Developement",
+        "color": "bg-orange-100 border-orange-300 text-orange-800",
+        "bgHex": "#fce7d9",
+        "textHex": "#824217",
+        "borderHex": "#e4a981"
+      },
+      {
+        "id": "cmki6byuj000180vrjoeron16",
+        "name": "Timothy Mawulikem",
+        "subject": "Pro-6-Month Professional Course",
+        "color": "bg-purple-100 border-purple-300 text-purple-800",
+        "bgHex": "#ebd9fc",
+        "textHex": "#4d1782",
+        "borderHex": "#b381e4"
+      },
+      {
+        "id": "cmkidp59c000680vrnm8s5zup",
+        "name": "Ewuradwoa Amponsah Yeboah",
+        "subject": "Module 1 - Beginners",
+        "color": "bg-indigo-100 border-indigo-300 text-indigo-800",
+        "bgHex": "#d9ddfc",
+        "textHex": "#172282",
+        "borderHex": "#818be4"
+      }
+    ]
+  },
+  {
+    "id": "sat-4",
+    "day": "Saturday",
+    "time": "4:00 - 6:00",
+    "students": [
+      {
+        "id": "cmki6urm2000280vr6uc10l59",
+        "name": "Godstime Watt Fiedin",
+        "subject": "Pro-6-Month Professional Course",
+        "color": "bg-teal-100 border-teal-300 text-teal-800",
+        "bgHex": "#d9fcf8",
+        "textHex": "#178277",
+        "borderHex": "#81e4da"
+      },
+      {
+        "id": "cmkidrzsz000780vrsdacs74t",
+        "name": "Caleb Amponsah Yeboah",
+        "subject": "Pro-6-Month Professional Course",
+        "color": "bg-green-100 border-green-300 text-green-800",
+        "bgHex": "#d9fce6",
+        "textHex": "#17823e",
+        "borderHex": "#81e4a5"
+      },
+      {
+        "id": "cmkiimoh50000v0vr7wvdsj4i",
+        "name": "Jason Dei",
+        "subject": "Pro-6-Month Professional Course",
+        "color": "bg-indigo-100 border-indigo-300 text-indigo-800",
+        "bgHex": "#d9ddfc",
+        "textHex": "#172282",
+        "borderHex": "#818be4"
+      },
+      {
+        "id": "cmkiiqdw60001v0vr47byfr20",
+        "name": "Jayden Kumahor",
+        "subject": "Module 1 - Beginners",
+        "color": "bg-orange-100 border-orange-300 text-orange-800",
+        "bgHex": "#fce7d9",
+        "textHex": "#824217",
+        "borderHex": "#e4a981"
+      }
+    ]
+  },
+  { "id": "sat-5", "day": "Saturday", "time": "6:30 - 8:30", "students": [] },
+  { "id": "sun-1", "day": "Sunday", "time": "6:30 - 8:30", "students": [] }
+]

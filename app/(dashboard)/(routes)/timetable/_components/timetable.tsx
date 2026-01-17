@@ -90,7 +90,8 @@ const initialTimeSlots: TimeSlot[] = [
   { id: "sat-3", day: "Saturday", time: "1:30 - 3:30", students: [] },
   { id: "sat-4", day: "Saturday", time: "4:00 - 6:00", students: [] },
   { id: "sat-5", day: "Saturday", time: "6:30 - 8:30", students: [] },
-  { id: "sun-1", day: "Sunday", time: "6:30 - 8:30", students: [] },
+  { id: "sun-1", day: "Sunday", time: "4:00 - 6:30", students: [] },
+  { id: "sun-2", day: "Sunday", time: "6:30 - 8:30", students: [] },
 ];
 
 export function Timetable() {

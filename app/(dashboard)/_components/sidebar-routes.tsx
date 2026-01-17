@@ -1,6 +1,6 @@
 "use client";
 
-import { Layout, Calendar } from "lucide-react";
+import { Layout, Calendar, Folder } from "lucide-react";
 import SidebarItem from "./sidebar-item";
 
 const guestRoutes = [
@@ -13,6 +13,11 @@ const guestRoutes = [
     label: "TimeTable",
     icon: Calendar,
     href: "/timetable",
+  },
+  {
+    label: "Directory",
+    icon: Folder,
+    href: "/directory",
   },
 ];
 

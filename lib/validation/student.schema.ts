@@ -90,13 +90,8 @@ export const studentSchema = z.object({
     .max(100, "Emergency contact name must be less than 100 characters")
     .optional(),
 
-  emergencyContactPhone: z
-    .string()
-    .optional()
-    .refine((val) => !val || phoneRegex.test(val), {
-      message: "Invalid emergency phone number format",
-    }),
-  imageUrl: z.string(),
+  emergencyContactPhone: z.string().optional(),
+  imageUrl: z.string().optional(),
   course: z.string(),
 });
 
@@ -155,14 +150,8 @@ export const studentFormSchema = z.object({
     .max(100, "Emergency contact name must be less than 100 characters")
     .optional(),
 
-  emergencyContactPhone: z
-    .string()
-    .optional()
-    .refine((val) => !val || phoneRegex.test(val), {
-      message: "Invalid emergency phone number format",
-    }),
-
-  imageUrl: z.string(),
+  emergencyContactPhone: z.string().optional(),
+  imageUrl: z.string().optional,
   course: z.string(),
 });
 // Schema for profile image upload

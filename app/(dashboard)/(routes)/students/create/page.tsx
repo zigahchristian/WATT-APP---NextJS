@@ -323,8 +323,7 @@ const AddStudentForm = () => {
 
   async function onSubmit(data: StudentFormValues) {
     setIsLoading(true);
-    console.log(data);
-    return;
+
     try {
       await axios.post("/api/students", data);
       router.push("/students");
