@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { StudentList } from "./student-list";
 import { TimetableGrid } from "./timetable-grid";
-import { Download, RotateCcw, Save } from "lucide-react";
+import { Download, RotateCcw, Save, Plus, Trash2 } from "lucide-react";
 import jsPDF from "jspdf";
 import { generateStudentColors } from "@/lib/color-utils";
 import axios from "axios";
@@ -47,11 +47,11 @@ export interface TimeSlot {
   students: Student[];
 }
 
-// Add interface for Timetable data from database
+// Update interface to match API structure
 interface TimetableData {
   id?: string;
   timeSlots: TimeSlot[];
-  allStudents: Student[];
+  allStudents?: Student[];
   createdAt?: string;
   updatedAt?: string;
 }
@@ -105,6 +105,10 @@ export function Timetable() {
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [newSlotDay, setNewSlotDay] = useState<"Saturday" | "Sunday">(
+    "Saturday"
+  );
+  const [newSlotTime, setNewSlotTime] = useState<string>("");
   const timetableRef = useRef<HTMLDivElement>(null);
 
   // Helper to calculate available students
@@ -138,7 +142,6 @@ export function Timetable() {
 
       try {
         // 1. Fetch students from API
-
         const studentsResponse = await axios.get("/api/students");
 
         if (!studentsResponse.data) {
@@ -154,26 +157,26 @@ export function Timetable() {
         const transformedStudents = transformStudentData(rawStudents);
 
         // 2. Try to fetch timetable from database
-        let savedTimetable = null;
         let savedTimeSlots = initialTimeSlots;
-        let savedAllStudents = transformedStudents;
 
         try {
           const timetableResponse = await axios.get("/api/timetable");
 
           if (timetableResponse.data && timetableResponse.data.timeSlots) {
-            savedTimetable = timetableResponse.data;
-
-            // Parse the timeSlots from database
-            const dbTimeSlots = savedTimetable.timeSlots as TimeSlot[];
-            if (Array.isArray(dbTimeSlots)) {
+            const dbTimeSlots = timetableResponse.data.timeSlots as TimeSlot[];
+            if (Array.isArray(dbTimeSlots) && dbTimeSlots.length > 0) {
               savedTimeSlots = dbTimeSlots;
-            }
 
-            // If we have stored allStudents in database, use them
-            const dbAllStudents = savedTimetable.allStudents as Student[];
-            if (Array.isArray(dbAllStudents) && dbAllStudents.length > 0) {
-              savedAllStudents = dbAllStudents;
+              // Check if we need to merge with current student data
+              const allStudentIds = new Set(
+                transformedStudents.map((s) => s.id)
+              );
+              savedTimeSlots = savedTimeSlots.map((slot) => ({
+                ...slot,
+                students: slot.students.filter((student) =>
+                  allStudentIds.has(student.id)
+                ),
+              }));
             }
           } else {
             console.log(
@@ -190,13 +193,13 @@ export function Timetable() {
         }
 
         // 3. Set the state with either saved data or fresh data
-        setAllStudents(savedAllStudents);
+        setAllStudents(transformedStudents);
         setTimeSlots(savedTimeSlots);
 
         // 4. Calculate available students
         const availableStudents = updateAvailableStudents(
           savedTimeSlots,
-          savedAllStudents
+          transformedStudents
         );
         setStudents(availableStudents);
       } catch (error) {
@@ -215,7 +218,7 @@ export function Timetable() {
     fetchAllData();
   }, [updateAvailableStudents]);
 
-  // Save timetable to database whenever timeSlots or allStudents change
+  // Save timetable to database whenever timeSlots change
   useEffect(() => {
     // Don't save on initial load or if no students loaded yet
     if (isLoading || isInitialLoad || allStudents.length === 0) {
@@ -236,14 +239,14 @@ export function Timetable() {
       try {
         const timetableData: TimetableData = {
           timeSlots,
-          allStudents,
         };
 
-        // Use POST to upsert the "main" timetable
+        // Use POST to upsert the "main" timetable - matches your API structure
         await axios.post("/api/timetable", timetableData);
 
         setHasChanges(false);
       } catch (error) {
+        console.error("Error auto-saving timetable:", error);
       } finally {
         setIsSaving(false);
       }
@@ -329,21 +332,75 @@ export function Timetable() {
     handleDragEnd();
   };
 
+  // Handle timeslot time update
+  const handleUpdateTimeSlot = (slotId: string, newTime: string) => {
+    setTimeSlots((prev) =>
+      prev.map((slot) =>
+        slot.id === slotId ? { ...slot, time: newTime } : slot
+      )
+    );
+  };
+
+  // Handle delete timeslot
+  const handleDeleteTimeSlot = (slotId: string) => {
+    if (
+      !window.confirm(
+        "Are you sure you want to delete this timeslot? All students in this slot will be moved back to the available list."
+      )
+    ) {
+      return;
+    }
+
+    const slotToDelete = timeSlots.find((slot) => slot.id === slotId);
+    if (!slotToDelete) return;
+
+    // Move students back to available list
+    if (slotToDelete.students.length > 0) {
+      setStudents((prev) => [...prev, ...slotToDelete.students]);
+    }
+
+    // Remove the timeslot
+    setTimeSlots((prev) => prev.filter((slot) => slot.id !== slotId));
+  };
+
+  // Handle create new timeslot
+  const handleCreateTimeSlot = () => {
+    if (!newSlotTime.trim()) {
+      alert("Please enter a time for the new slot");
+      return;
+    }
+
+    const newSlotId = `${newSlotDay.toLowerCase().slice(0, 3)}-${Date.now()}`;
+    const newSlot: TimeSlot = {
+      id: newSlotId,
+      day: newSlotDay,
+      time: newSlotTime.trim(),
+      students: [],
+    };
+
+    setTimeSlots((prev) => [...prev, newSlot]);
+    setNewSlotTime("");
+  };
+
   const handleReset = async () => {
     if (
       !window.confirm(
-        "Are you sure you want to reset the timetable? This will clear all assignments."
+        "Are you sure you want to reset the timetable? This will clear all assignments and reset to default timeslots."
       )
     ) {
       return;
     }
 
     // Reset to initial state
-    setTimeSlots(initialTimeSlots);
+    const resetTimeSlots = initialTimeSlots.map((slot) => ({
+      ...slot,
+      students: [],
+    }));
+    setTimeSlots(resetTimeSlots);
 
-    // Delete the timetable from database
+    // Delete the timetable from database by saving empty slots
     try {
-      await axios.delete("/api/timetable");
+      await axios.post("/api/timetable", { timeSlots: resetTimeSlots });
 
       // Fetch fresh students again
       const studentsResponse = await axios.get("/api/students");
@@ -365,7 +422,6 @@ export function Timetable() {
     try {
       const timetableData: TimetableData = {
         timeSlots,
-        allStudents,
       };
 
       await axios.post("/api/timetable", timetableData);
@@ -389,20 +445,23 @@ export function Timetable() {
 
       // Try to fetch timetable
       let savedTimeSlots = initialTimeSlots;
-      let savedAllStudents = transformedStudents;
 
       try {
         const timetableResponse = await axios.get("/api/timetable");
 
         if (timetableResponse.data && timetableResponse.data.timeSlots) {
           const dbTimeSlots = timetableResponse.data.timeSlots as TimeSlot[];
-          if (Array.isArray(dbTimeSlots)) {
+          if (Array.isArray(dbTimeSlots) && dbTimeSlots.length > 0) {
             savedTimeSlots = dbTimeSlots;
-          }
 
-          const dbAllStudents = timetableResponse.data.allStudents as Student[];
-          if (Array.isArray(dbAllStudents) && dbAllStudents.length > 0) {
-            savedAllStudents = dbAllStudents;
+            // Filter out students that no longer exist
+            const allStudentIds = new Set(transformedStudents.map((s) => s.id));
+            savedTimeSlots = savedTimeSlots.map((slot) => ({
+              ...slot,
+              students: slot.students.filter((student) =>
+                allStudentIds.has(student.id)
+              ),
+            }));
           }
         }
       } catch (timetableError) {
@@ -410,13 +469,13 @@ export function Timetable() {
       }
 
       // Set all state
-      setAllStudents(savedAllStudents);
+      setAllStudents(transformedStudents);
       setTimeSlots(savedTimeSlots);
 
       // Calculate available students
       const availableStudents = updateAvailableStudents(
         savedTimeSlots,
-        savedAllStudents
+        transformedStudents
       );
       setStudents(availableStudents);
     } catch (error) {
@@ -458,7 +517,7 @@ export function Timetable() {
     pdf.text("Saturday", 15, yPos);
     yPos += 8;
 
-    const slotWidth = (pageWidth - 30) / 5;
+    const slotWidth = (pageWidth - 30) / Math.max(saturdaySlots.length, 1);
     const slotHeight = 50;
 
     // Draw Saturday slots
@@ -598,6 +657,47 @@ export function Timetable() {
         </div>
       </div>
 
+      {/* Create new timeslot form */}
+      <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+        <h3 className="text-lg font-semibold text-gray-700 mb-3">
+          Add New Timeslot
+        </h3>
+        <div className="flex flex-wrap items-center gap-4">
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium text-gray-600">Day:</label>
+            <select
+              value={newSlotDay}
+              onChange={(e) =>
+                setNewSlotDay(e.target.value as "Saturday" | "Sunday")
+              }
+              className="px-3 py-2 border rounded-md text-sm"
+            >
+              <option value="Saturday">Saturday</option>
+              <option value="Sunday">Sunday</option>
+            </select>
+          </div>
+          <div className="flex items-center gap-2">
+            <label className="text-sm font-medium text-gray-600">Time:</label>
+            <input
+              type="text"
+              value={newSlotTime}
+              onChange={(e) => setNewSlotTime(e.target.value)}
+              placeholder="e.g., 9:00 - 11:00"
+              className="px-3 py-2 border rounded-md text-sm w-40 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <Button onClick={handleCreateTimeSlot} className="gap-2">
+            <Plus className="h-4 w-4" />
+            Add Timeslot
+          </Button>
+          <div className="text-sm text-gray-500 ml-auto">
+            {timeSlots.filter((s) => s.day === "Saturday").length} Saturday
+            slots •{timeSlots.filter((s) => s.day === "Sunday").length} Sunday
+            slots
+          </div>
+        </div>
+      </div>
+
       <div className="grid lg:grid-cols-[280px_1fr] gap-6">
         <StudentList
           students={students}
@@ -614,6 +714,8 @@ export function Timetable() {
             onDragEnd={handleDragEnd}
             onDrop={handleDropOnSlot}
             draggedStudent={draggedStudent}
+            onUpdateTimeSlot={handleUpdateTimeSlot}
+            onDeleteTimeSlot={handleDeleteTimeSlot}
           />
         </div>
       </div>
