@@ -42,7 +42,7 @@ export interface Student {
 
 export interface TimeSlot {
   id: string;
-  day: "Saturday" | "Sunday";
+  day: string;
   time: string;
   students: Student[];
 }
@@ -80,18 +80,74 @@ function transformStudentData(rawData: RawStudent[]): Student[] {
       bgHex: generateStudentColors(student.firstName).bgHex,
       textHex: generateStudentColors(student.firstName).textHex,
       borderHex: generateStudentColors(student.firstName).borderHex,
-    })
+    }),
   );
 }
 
+// Default days of the week
+const daysOfWeek = [
+  "Monday",
+  "Tuesday",
+  "Wednesday",
+  "Thursday",
+  "Friday",
+  "Saturday",
+  "Sunday",
+];
+
+// Day colors for consistent styling
+const dayColors: Record<string, { text: string; bg: string; lightBg: string }> =
+  {
+    Monday: { text: "#3b82f6", bg: "#dbeafe", lightBg: "#eff6ff" },
+    Tuesday: { text: "#8b5cf6", bg: "#e9d5ff", lightBg: "#f5f3ff" },
+    Wednesday: { text: "#10b981", bg: "#d1fae5", lightBg: "#ecfdf5" },
+    Thursday: { text: "#f59e0b", bg: "#fef3c7", lightBg: "#fffbeb" },
+    Friday: { text: "#ef4444", bg: "#fee2e2", lightBg: "#fef2f2" },
+    Saturday: { text: "#ec4899", bg: "#fce7f3", lightBg: "#fdf2f8" },
+    Sunday: { text: "#14b8a6", bg: "#ccfbf1", lightBg: "#f0fdfa" },
+  };
+
+// Initial time slots for each day
 const initialTimeSlots: TimeSlot[] = [
-  { id: "sat-1", day: "Saturday", time: "8:30 - 10:30", students: [] },
-  { id: "sat-2", day: "Saturday", time: "11:00 - 1:00", students: [] },
-  { id: "sat-3", day: "Saturday", time: "1:30 - 3:30", students: [] },
-  { id: "sat-4", day: "Saturday", time: "4:00 - 6:00", students: [] },
-  { id: "sat-5", day: "Saturday", time: "6:30 - 8:30", students: [] },
-  { id: "sun-1", day: "Sunday", time: "4:00 - 6:30", students: [] },
-  { id: "sun-2", day: "Sunday", time: "6:30 - 8:30", students: [] },
+  // Monday
+  { id: "mon-morning", day: "Monday", time: "9:00 - 11:00", students: [] },
+  { id: "mon-afternoon", day: "Monday", time: "13:00 - 15:00", students: [] },
+  { id: "mon-evening", day: "Monday", time: "17:00 - 19:00", students: [] },
+
+  // Tuesday
+  { id: "tue-morning", day: "Tuesday", time: "9:00 - 11:00", students: [] },
+  { id: "tue-afternoon", day: "Tuesday", time: "13:00 - 15:00", students: [] },
+  { id: "tue-evening", day: "Tuesday", time: "17:00 - 19:00", students: [] },
+
+  // Wednesday
+  { id: "wed-morning", day: "Wednesday", time: "9:00 - 11:00", students: [] },
+  {
+    id: "wed-afternoon",
+    day: "Wednesday",
+    time: "13:00 - 15:00",
+    students: [],
+  },
+  { id: "wed-evening", day: "Wednesday", time: "17:00 - 19:00", students: [] },
+
+  // Thursday
+  { id: "thu-morning", day: "Thursday", time: "9:00 - 11:00", students: [] },
+  { id: "thu-afternoon", day: "Thursday", time: "13:00 - 15:00", students: [] },
+  { id: "thu-evening", day: "Thursday", time: "17:00 - 19:00", students: [] },
+
+  // Friday
+  { id: "fri-morning", day: "Friday", time: "9:00 - 11:00", students: [] },
+  { id: "fri-afternoon", day: "Friday", time: "13:00 - 15:00", students: [] },
+  { id: "fri-evening", day: "Friday", time: "17:00 - 19:00", students: [] },
+
+  // Saturday
+  { id: "sat-morning", day: "Saturday", time: "9:00 - 11:00", students: [] },
+  { id: "sat-afternoon", day: "Saturday", time: "13:00 - 15:00", students: [] },
+  { id: "sat-evening", day: "Saturday", time: "17:00 - 19:00", students: [] },
+
+  // Sunday
+  { id: "sun-morning", day: "Sunday", time: "9:00 - 11:00", students: [] },
+  { id: "sun-afternoon", day: "Sunday", time: "13:00 - 15:00", students: [] },
+  { id: "sun-evening", day: "Sunday", time: "17:00 - 19:00", students: [] },
 ];
 
 export function Timetable() {
@@ -105,10 +161,17 @@ export function Timetable() {
   const [isSaving, setIsSaving] = useState(false);
   const [hasChanges, setHasChanges] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
-  const [newSlotDay, setNewSlotDay] = useState<"Saturday" | "Sunday">(
-    "Saturday"
-  );
+  const [newSlotDay, setNewSlotDay] = useState<string>("Monday");
   const [newSlotTime, setNewSlotTime] = useState<string>("");
+  const [expandedDays, setExpandedDays] = useState<Record<string, boolean>>({
+    Monday: true,
+    Tuesday: true,
+    Wednesday: true,
+    Thursday: true,
+    Friday: true,
+    Saturday: true,
+    Sunday: true,
+  });
   const timetableRef = useRef<HTMLDivElement>(null);
 
   // Helper to calculate available students
@@ -118,12 +181,12 @@ export function Timetable() {
       const studentIdsInSlots = new Set(studentsInSlots.map((s) => s.id));
 
       const remainingStudents = allStuds.filter(
-        (student) => !studentIdsInSlots.has(student.id)
+        (student) => !studentIdsInSlots.has(student.id),
       );
 
       return remainingStudents;
     },
-    []
+    [],
   );
 
   // Update students list when timeSlots or allStudents change
@@ -169,25 +232,25 @@ export function Timetable() {
 
               // Check if we need to merge with current student data
               const allStudentIds = new Set(
-                transformedStudents.map((s) => s.id)
+                transformedStudents.map((s) => s.id),
               );
               savedTimeSlots = savedTimeSlots.map((slot) => ({
                 ...slot,
                 students: slot.students.filter((student) =>
-                  allStudentIds.has(student.id)
+                  allStudentIds.has(student.id),
                 ),
               }));
             }
           } else {
             console.log(
-              "No existing timetable found in database, will start fresh"
+              "No existing timetable found in database, will start fresh",
             );
           }
         } catch (timetableError: any) {
           // This is expected on first load - no timetable exists yet
           console.log(
             "No timetable in database yet (first load):",
-            timetableError.message
+            timetableError.message,
           );
           // Don't throw error here, just continue with fresh data
         }
@@ -199,7 +262,7 @@ export function Timetable() {
         // 4. Calculate available students
         const availableStudents = updateAvailableStudents(
           savedTimeSlots,
-          transformedStudents
+          transformedStudents,
         );
         setStudents(availableStudents);
       } catch (error) {
@@ -207,7 +270,7 @@ export function Timetable() {
         setError(
           `Failed to load data: ${
             error instanceof Error ? error.message : "Unknown error"
-          }`
+          }`,
         );
       } finally {
         setIsLoading(false);
@@ -227,7 +290,7 @@ export function Timetable() {
 
     // Don't save if it's just the initial empty state
     const hasAnyStudentsInSlots = timeSlots.some(
-      (slot) => slot.students.length > 0
+      (slot) => slot.students.length > 0,
     );
     if (!hasAnyStudentsInSlots && students.length === allStudents.length) {
       // This is the initial empty state, don't save
@@ -288,11 +351,11 @@ export function Timetable() {
             ? {
                 ...slot,
                 students: slot.students.filter(
-                  (s) => s.id !== draggedStudent.id
+                  (s) => s.id !== draggedStudent.id,
                 ),
               }
-            : slot
-        )
+            : slot,
+        ),
       );
     }
 
@@ -301,8 +364,8 @@ export function Timetable() {
       prev.map((slot) =>
         slot.id === slotId
           ? { ...slot, students: [...slot.students, draggedStudent] }
-          : slot
-      )
+          : slot,
+      ),
     );
 
     handleDragEnd();
@@ -319,11 +382,11 @@ export function Timetable() {
             ? {
                 ...slot,
                 students: slot.students.filter(
-                  (s) => s.id !== draggedStudent.id
+                  (s) => s.id !== draggedStudent.id,
                 ),
               }
-            : slot
-        )
+            : slot,
+        ),
       );
     }
 
@@ -332,12 +395,21 @@ export function Timetable() {
     handleDragEnd();
   };
 
-  // Handle timeslot time update
-  const handleUpdateTimeSlot = (slotId: string, newTime: string) => {
+  // Handle timeslot update (both day and time)
+  const handleUpdateTimeSlot = (
+    slotId: string,
+    updates: { day?: string; time?: string },
+  ) => {
     setTimeSlots((prev) =>
       prev.map((slot) =>
-        slot.id === slotId ? { ...slot, time: newTime } : slot
-      )
+        slot.id === slotId
+          ? {
+              ...slot,
+              day: updates.day !== undefined ? updates.day : slot.day,
+              time: updates.time !== undefined ? updates.time : slot.time,
+            }
+          : slot,
+      ),
     );
   };
 
@@ -345,7 +417,7 @@ export function Timetable() {
   const handleDeleteTimeSlot = (slotId: string) => {
     if (
       !window.confirm(
-        "Are you sure you want to delete this timeslot? All students in this slot will be moved back to the available list."
+        "Are you sure you want to delete this timeslot? All students in this slot will be moved back to the available list.",
       )
     ) {
       return;
@@ -365,27 +437,40 @@ export function Timetable() {
 
   // Handle create new timeslot
   const handleCreateTimeSlot = () => {
-    if (!newSlotTime.trim()) {
-      alert("Please enter a time for the new slot");
+    if (!newSlotDay.trim() || !newSlotTime.trim()) {
+      alert("Please enter both day and time for the new slot");
       return;
     }
 
     const newSlotId = `${newSlotDay.toLowerCase().slice(0, 3)}-${Date.now()}`;
     const newSlot: TimeSlot = {
       id: newSlotId,
-      day: newSlotDay,
+      day: newSlotDay.trim(),
       time: newSlotTime.trim(),
       students: [],
     };
 
     setTimeSlots((prev) => [...prev, newSlot]);
-    setNewSlotTime("");
+
+    // Ensure the day is expanded when adding a new slot
+    setExpandedDays((prev) => ({
+      ...prev,
+      [newSlotDay.trim()]: true,
+    }));
+  };
+
+  // Toggle day expansion
+  const toggleDayExpansion = (day: string) => {
+    setExpandedDays((prev) => ({
+      ...prev,
+      [day]: !prev[day],
+    }));
   };
 
   const handleReset = async () => {
     if (
       !window.confirm(
-        "Are you sure you want to reset the timetable? This will clear all assignments and reset to default timeslots."
+        "Are you sure you want to reset the timetable? This will clear all assignments and reset to default timeslots.",
       )
     ) {
       return;
@@ -459,7 +544,7 @@ export function Timetable() {
             savedTimeSlots = savedTimeSlots.map((slot) => ({
               ...slot,
               students: slot.students.filter((student) =>
-                allStudentIds.has(student.id)
+                allStudentIds.has(student.id),
               ),
             }));
           }
@@ -475,14 +560,14 @@ export function Timetable() {
       // Calculate available students
       const availableStudents = updateAvailableStudents(
         savedTimeSlots,
-        transformedStudents
+        transformedStudents,
       );
       setStudents(availableStudents);
     } catch (error) {
       setError(
         `Failed to fetch data: ${
           error instanceof Error ? error.message : "Unknown error"
-        }`
+        }`,
       );
     } finally {
       setIsLoading(false);
@@ -503,94 +588,80 @@ export function Timetable() {
     // Title
     pdf.setFontSize(18);
     pdf.setTextColor(30, 30, 30);
-    pdf.text("WATT PROFFESSIONAL STUDIES - Timetable", pageWidth / 2, yPos, {
+    pdf.text("WATT PROFESSIONAL STUDIES - Timetable", pageWidth / 2, yPos, {
       align: "center",
     });
     yPos += 15;
 
-    const saturdaySlots = timeSlots.filter((slot) => slot.day === "Saturday");
-    const sundaySlots = timeSlots.filter((slot) => slot.day === "Sunday");
+    // Group timeslots by day in order of the week
+    const orderedDays = [
+      "Monday",
+      "Tuesday",
+      "Wednesday",
+      "Thursday",
+      "Friday",
+      "Saturday",
+      "Sunday",
+    ];
+    const daysWithSlots = orderedDays.filter((day) =>
+      timeSlots.some((slot) => slot.day === day),
+    );
 
-    // Saturday section
-    pdf.setFontSize(14);
-    pdf.setTextColor(59, 130, 246); // blue
-    pdf.text("Saturday", 15, yPos);
-    yPos += 8;
+    daysWithSlots.forEach((day, dayIndex) => {
+      const daySlots = timeSlots.filter((slot) => slot.day === day);
+      const color = dayColors[day] || dayColors["Monday"];
 
-    const slotWidth = (pageWidth - 30) / Math.max(saturdaySlots.length, 1);
-    const slotHeight = 50;
+      // Day section
+      pdf.setFontSize(14);
+      pdf.setTextColor(color.text);
+      pdf.text(day, 15, yPos);
+      yPos += 8;
 
-    // Draw Saturday slots
-    saturdaySlots.forEach((slot, index) => {
-      const xPos = 15 + index * slotWidth;
+      const slotWidth = (pageWidth - 30) / Math.min(daySlots.length, 5);
+      const slotHeight = 40;
 
-      // Slot background
-      pdf.setFillColor(249, 250, 251);
-      pdf.setDrawColor(229, 231, 235);
-      pdf.roundedRect(xPos, yPos, slotWidth - 4, slotHeight, 2, 2, "FD");
+      // Draw slots for this day
+      daySlots.forEach((slot, index) => {
+        if (index < 5) {
+          // Max 5 slots per row
+          const xPos = 15 + index * slotWidth;
 
-      // Time header
-      pdf.setFontSize(9);
-      pdf.setTextColor(107, 114, 128);
-      pdf.text(slot.time, xPos + (slotWidth - 4) / 2, yPos + 6, {
-        align: "center",
-      });
+          // Slot background
+          pdf.setFillColor(249, 250, 251);
+          pdf.setDrawColor(229, 231, 235);
+          pdf.roundedRect(xPos, yPos, slotWidth - 4, slotHeight, 2, 2, "FD");
 
-      // Students
-      let studentY = yPos + 12;
-      slot.students.forEach((student) => {
-        if (studentY < yPos + slotHeight - 8) {
-          pdf.setFillColor(student.bgHex);
-          pdf.setDrawColor(student.borderHex);
-          pdf.roundedRect(xPos + 2, studentY, slotWidth - 8, 10, 1, 1, "FD");
+          // Time header
+          pdf.setFontSize(8);
+          pdf.setTextColor(107, 114, 128);
+          pdf.text(slot.time, xPos + (slotWidth - 4) / 2, yPos + 6, {
+            align: "center",
+          });
 
-          pdf.setFontSize(7);
-          pdf.setTextColor(student.textHex);
-          pdf.text(student.name, xPos + 4, studentY + 4);
-          pdf.setFontSize(6);
-          pdf.text(student.subject, xPos + 4, studentY + 8);
-          studentY += 12;
+          // Students
+          let studentY = yPos + 12;
+          slot.students.forEach((student) => {
+            if (studentY < yPos + slotHeight - 6) {
+              pdf.setFillColor(student.bgHex);
+              pdf.setDrawColor(student.borderHex);
+              pdf.roundedRect(xPos + 2, studentY, slotWidth - 8, 8, 1, 1, "FD");
+
+              pdf.setFontSize(6);
+              pdf.setTextColor(student.textHex);
+              pdf.text(student.name.substring(0, 12), xPos + 4, studentY + 3.5);
+              studentY += 9;
+            }
+          });
         }
       });
-    });
 
-    yPos += slotHeight + 15;
+      yPos += slotHeight + 10;
 
-    // Sunday section
-    pdf.setFontSize(14);
-    pdf.setTextColor(249, 115, 22); // orange
-    pdf.text("Sunday", 15, yPos);
-    yPos += 8;
-
-    // Draw Sunday slots
-    sundaySlots.forEach((slot, index) => {
-      const xPos = 15 + index * slotWidth;
-
-      pdf.setFillColor(249, 250, 251);
-      pdf.setDrawColor(229, 231, 235);
-      pdf.roundedRect(xPos, yPos, slotWidth - 4, slotHeight, 2, 2, "FD");
-
-      pdf.setFontSize(9);
-      pdf.setTextColor(107, 114, 128);
-      pdf.text(slot.time, xPos + (slotWidth - 4) / 2, yPos + 6, {
-        align: "center",
-      });
-
-      let studentY = yPos + 12;
-      slot.students.forEach((student) => {
-        if (studentY < yPos + slotHeight - 8) {
-          pdf.setFillColor(student.bgHex);
-          pdf.setDrawColor(student.borderHex);
-          pdf.roundedRect(xPos + 2, studentY, slotWidth - 8, 10, 1, 1, "FD");
-
-          pdf.setFontSize(7);
-          pdf.setTextColor(student.textHex);
-          pdf.text(student.name, xPos + 4, studentY + 4);
-          pdf.setFontSize(6);
-          pdf.text(student.subject, xPos + 4, studentY + 8);
-          studentY += 12;
-        }
-      });
+      // Start new page if running out of space
+      if (yPos > 250 && dayIndex < daysWithSlots.length - 1) {
+        pdf.addPage();
+        yPos = 15;
+      }
     });
 
     pdf.save("timetable.pdf");
@@ -667,13 +738,14 @@ export function Timetable() {
             <label className="text-sm font-medium text-gray-600">Day:</label>
             <select
               value={newSlotDay}
-              onChange={(e) =>
-                setNewSlotDay(e.target.value as "Saturday" | "Sunday")
-              }
-              className="px-3 py-2 border rounded-md text-sm"
+              onChange={(e) => setNewSlotDay(e.target.value)}
+              className="px-3 py-2 border rounded-md text-sm w-32 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
-              <option value="Saturday">Saturday</option>
-              <option value="Sunday">Sunday</option>
+              {daysOfWeek.map((day) => (
+                <option key={day} value={day}>
+                  {day}
+                </option>
+              ))}
             </select>
           </div>
           <div className="flex items-center gap-2">
@@ -691,9 +763,13 @@ export function Timetable() {
             Add Timeslot
           </Button>
           <div className="text-sm text-gray-500 ml-auto">
-            {timeSlots.filter((s) => s.day === "Saturday").length} Saturday
-            slots •{timeSlots.filter((s) => s.day === "Sunday").length} Sunday
-            slots
+            {timeSlots.length} total slots •{" "}
+            {
+              daysOfWeek.filter((day) =>
+                timeSlots.some((slot) => slot.day === day),
+              ).length
+            }{" "}
+            days with slots
           </div>
         </div>
       </div>
@@ -716,6 +792,9 @@ export function Timetable() {
             draggedStudent={draggedStudent}
             onUpdateTimeSlot={handleUpdateTimeSlot}
             onDeleteTimeSlot={handleDeleteTimeSlot}
+            expandedDays={expandedDays}
+            onToggleDayExpansion={toggleDayExpansion}
+            dayColors={dayColors}
           />
         </div>
       </div>
