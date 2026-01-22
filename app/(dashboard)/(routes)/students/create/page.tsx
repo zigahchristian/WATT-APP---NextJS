@@ -97,7 +97,7 @@ const studentFormSchema = z.object({
 type StudentFormValues = z.infer<typeof studentFormSchema>;
 // Generate student ID
 const generateStudentId = () => {
-  const prefix = "WATT";
+  const prefix = "WATTPRO";
   const randomNum = Math.floor(100000 + Math.random() * 900000);
   return `${prefix}${randomNum}`;
 };
@@ -138,7 +138,7 @@ const months = [
 const currentYear = new Date().getFullYear();
 const years = Array.from(
   { length: currentYear - 1899 },
-  (_, i) => currentYear - i
+  (_, i) => currentYear - i,
 );
 
 // Webcam video constraints
@@ -181,7 +181,7 @@ const EnhancedCalendar = ({
     const newDate = new Date(
       currentDate.getFullYear(),
       currentDate.getMonth() - 1,
-      1
+      1,
     );
     setCurrentDate(newDate);
   };
@@ -190,7 +190,7 @@ const EnhancedCalendar = ({
     const newDate = new Date(
       currentDate.getFullYear(),
       currentDate.getMonth() + 1,
-      1
+      1,
     );
     setCurrentDate(newDate);
   };
@@ -573,7 +573,7 @@ const AddStudentForm = () => {
                                                   </Button>
                                                 </div>
                                               </div>
-                                            )
+                                            ),
                                           )}
                                         </div>
                                       </div>
@@ -656,7 +656,7 @@ const AddStudentForm = () => {
                                         useCapturedImage(
                                           capturedImages[
                                             capturedImages.length - 1
-                                          ]
+                                          ],
                                         );
                                       } else {
                                         setIsCameraOpen(false);

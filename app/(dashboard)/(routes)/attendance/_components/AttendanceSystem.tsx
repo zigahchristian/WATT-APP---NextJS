@@ -50,11 +50,24 @@ import { AttendanceStats } from "./AttendanceStats";
 import { AttendanceConfig } from "./AttendanceConfig";
 import axios from "axios";
 
-interface Student {
+interface StudentI {
   id: string;
   studentId: string;
   firstName: string;
   lastName: string;
+
+  dob: Date;
+  email: string;
+  phone: string;
+  address: string;
+
+  enrollmentdate: Date;
+  course: string;
+
+  // Optional fields
+  emergencyContactName?: string;
+  emergencyContactPhone?: string;
+  imageUrl?: string;
 }
 
 interface Attendance {
@@ -65,13 +78,13 @@ interface Attendance {
   subject: string;
   remarks?: string;
   createdAt: string;
-  student: Student;
+  student: StudentI;
 }
 
 export function AttendanceSystem() {
   const [activeTab, setActiveTab] = useState("records");
   const [attendance, setAttendance] = useState<Attendance[]>([]);
-  const [students, setStudents] = useState<Student[]>([]);
+  const [students, setStudents] = useState<StudentI[]>([]);
   const [loading, setLoading] = useState(true);
 
   // Filters

@@ -3,10 +3,11 @@ import prisma from "@/lib/prisma";
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { studentId: string } },
+  { params }: { params: Promise<{ id: string }> },
 ) {
   try {
-    const { studentId } = params;
+    // Await the params Promise
+    const { id: studentId } = await params;
 
     // Get student info
     const student = await prisma.student.findUnique({
@@ -34,6 +35,7 @@ export async function GET(
 
     // Calculate statistics
     const subjects = [...new Set(grades.map((g) => g.subject))];
+
     const report = subjects.map((subject) => {
       const subjectGrades = grades.filter((g) => g.subject === subject);
       const config = configs.find((c) => c.subject === subject);
@@ -47,7 +49,7 @@ export async function GET(
           acc[grade.assessmentType].push(grade);
           return acc;
         },
-        {} as Record<string, any[]>,
+        {} as Record<string, typeof subjectGrades>,
       );
 
       // Calculate weighted average
@@ -56,14 +58,15 @@ export async function GET(
 
       subjectGrades.forEach((grade) => {
         const percentage = (grade.score / grade.maxScore) * 100;
-        weightedTotal += percentage * (grade.weight || 1);
-        weightSum += grade.weight || 1;
+        const weight = grade.weight ?? 1;
+        weightedTotal += percentage * weight;
+        weightSum += weight;
       });
 
       const average = weightSum > 0 ? weightedTotal / weightSum : 0;
 
       // Determine grade letter
-      const gradingScale = (config?.gradingScale as any) || {
+      const gradingScale = (config?.gradingScale as Record<string, number>) || {
         A: 90,
         B: 80,
         C: 70,
@@ -73,7 +76,7 @@ export async function GET(
 
       let gradeLetter = "F";
       for (const [letter, minScore] of Object.entries(gradingScale)) {
-        if (average >= (minScore as number)) {
+        if (average >= minScore) {
           gradeLetter = letter;
           break;
         }
@@ -85,9 +88,9 @@ export async function GET(
         byType,
         average,
         gradeLetter,
-        config: config || null,
+        config: config ?? null,
         totalAssessments: subjectGrades.length,
-        lastAssessment: subjectGrades[subjectGrades.length - 1]?.date || null,
+        lastAssessment: subjectGrades[subjectGrades.length - 1]?.date ?? null,
       };
     });
 

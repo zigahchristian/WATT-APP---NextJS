@@ -106,7 +106,7 @@ export function GradingSystem() {
 
       // Process grades and attach student info including imageUrl
       const processedGrades: Grade[] = gradesRes.data.map((grade: any) => {
-        const { weight, ...rest } = grade;
+        const { ...rest } = grade;
 
         // Attach the corresponding student info
         const student = studentsMap[grade.studentId] || {
@@ -137,7 +137,7 @@ export function GradingSystem() {
   const handleSaveGrade = async (gradeData: any) => {
     try {
       // Remove weight field before sending
-      const { weight, ...dataWithoutWeight } = gradeData;
+      const { ...dataWithoutWeight } = gradeData;
 
       if (editingGrade) {
         await axios.put(
@@ -237,7 +237,7 @@ export function GradingSystem() {
     doc.setFontSize(22);
     doc.setTextColor(255, 255, 255);
     doc.setFont("helvetica", "bold");
-    doc.text("WATT PROFESSIONAL INSTITUTE", pageWidth / 2, 20, {
+    doc.text("WATT PROFESSIONAL STUDIES", pageWidth / 2, 20, {
       align: "center",
     });
 

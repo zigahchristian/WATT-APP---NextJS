@@ -36,7 +36,7 @@ interface Grade {
   assessmentType: string;
   score: number;
   maxScore: number;
-  weight: number;
+  weight?: number;
   date: string;
   comments?: string;
 }
