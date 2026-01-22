@@ -968,15 +968,12 @@ export function GradingSystem() {
         onValueChange={setActiveTab}
         className="space-y-4"
       >
-        <TabsList className="grid grid-cols-3 w-full max-w-md">
+        <TabsList className="grid grid-cols-2 w-full max-w-md">
           <TabsTrigger value="grades" className="flex items-center gap-2">
             <BookOpen className="h-4 w-4" />
             Grades
           </TabsTrigger>
-          <TabsTrigger value="reports" className="flex items-center gap-2">
-            <Download className="h-4 w-4" />
-            Reports
-          </TabsTrigger>
+
           <TabsTrigger value="config" className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4" />
             Configuration

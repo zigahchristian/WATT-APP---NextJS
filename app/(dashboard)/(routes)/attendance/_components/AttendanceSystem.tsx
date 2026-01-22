@@ -223,11 +223,9 @@ export function AttendanceSystem() {
       </div>
 
       <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList className="grid grid-cols-4 w-full md:w-auto">
+        <TabsList className="grid grid-cols-2 w-full md:w-auto">
           <TabsTrigger value="records">Records</TabsTrigger>
           <TabsTrigger value="stats">Statistics</TabsTrigger>
-          <TabsTrigger value="calendar">Calendar</TabsTrigger>
-          <TabsTrigger value="config">Configuration</TabsTrigger>
         </TabsList>
 
         <TabsContent value="records" className="space-y-4">

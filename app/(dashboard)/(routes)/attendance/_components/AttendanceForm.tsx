@@ -97,11 +97,24 @@ export function AttendanceForm({
   ];
 
   const subjects = [
-    "Pro-6-Month Professional Course",
-    "Module 1 - Beginners",
-    "Module 2A - Fullstack Web Developement",
-    "Module 2B - Software Developement",
-    "Module 3 - Networking & CyberSecurity",
+    "VMware & Windows OS",
+    "VMware & Linux OS",
+    "HTML",
+    "CSS",
+    "JavaScript",
+    "TypeScript",
+    "Web Design",
+    "Web Development",
+    "Full Stack Web Developement",
+    "Artificial Intelligence",
+    "Python Programing Language",
+    "C Programing Language",
+    "Mavis Beacon Teaches Typing",
+    "Networking",
+    "Cybersecurity",
+    "Windows OS Fundamentals",
+    "Introduction to AI",
+    "Accessing the Internet",
   ];
 
   return (
