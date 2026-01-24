@@ -1,6 +1,12 @@
 "use client";
 
-import { Layout, Calendar, Folder, CalendarCheck } from "lucide-react";
+import {
+  Layout,
+  Calendar,
+  Folder,
+  CalendarCheck,
+  CheckCircle,
+} from "lucide-react";
 import { MdGrading } from "react-icons/md";
 import SidebarItem from "./sidebar-item";
 
@@ -29,6 +35,11 @@ const guestRoutes = [
     label: "Grading",
     icon: MdGrading,
     href: "/grading",
+  },
+  {
+    label: "Quiz",
+    icon: CheckCircle,
+    href: "/quiz",
   },
 ];
 

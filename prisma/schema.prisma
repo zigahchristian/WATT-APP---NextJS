@@ -37,16 +37,18 @@ enum UserRole {
 }
 
 model User {
-  id             String    @id @default(cuid())
+  id             String       @id @default(cuid())
   firstname      String?
   lastname       String?
-  email          String    @unique
-  emailVerified  DateTime? @map("email_verified")
+  email          String       @unique
+  emailVerified  DateTime?    @map("email_verified")
   image          String?
   imagePublicUrl String?
   password       String?
-  role           UserRole? @default(USER)
+  role           UserRole?    @default(USER)
   Account        Account[]
+  quizzes        Quiz[]
+  quizReports    QuizReport[]
 
   @@map("users")
 }
@@ -73,6 +75,52 @@ model Student {
   courses               Course[]
   gradings              Grading[]
   attendances           Attendance[]
+  quizzes               Quiz[]
+  quizReports           QuizReport[]
+}
+
+model Quiz {
+  id          String       @id @default(cuid())
+  code        String       @unique
+  title       String
+  description String?
+  createdById String
+  createdBy   User         @relation(fields: [createdById], references: [id])
+  timeLimit   Int          @default(300) // Time in seconds
+  isActive    Boolean      @default(true)
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+  questions   Question[]
+  quizReports QuizReport[]
+  student     Student?     @relation(fields: [studentId], references: [id])
+  studentId   String?
+}
+
+model Question {
+  id            String   @id @default(cuid())
+  quizId        String
+  quiz          Quiz     @relation(fields: [quizId], references: [id], onDelete: Cascade)
+  text          String
+  options       Json // JSON array of options
+  correctAnswer Int // Index of correct answer
+  points        Int      @default(1)
+  order         Int
+  createdAt     DateTime @default(now())
+}
+
+model QuizReport {
+  id             String   @id @default(cuid())
+  quizId         String
+  userId         String
+  quiz           Quiz     @relation(fields: [quizId], references: [id])
+  user           User     @relation(fields: [userId], references: [id])
+  score          Int
+  totalQuestions Int
+  timeTaken      Int // Time taken in seconds
+  answers        Json // Store user's answers
+  completedAt    DateTime @default(now())
+  student        Student? @relation(fields: [studentId], references: [id])
+  studentId      String?
 }
 
 enum StudentStatus {
